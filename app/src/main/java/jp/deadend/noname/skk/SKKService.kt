@@ -91,6 +91,7 @@ class SKKService : InputMethodService() {
             }
         }
     }
+    private val mKeyMapperBroadcastReceiver = KeyMapperBroadcastReceiver(this)
 
     private fun extractDictionary(): Boolean {
         try {
@@ -193,6 +194,13 @@ class SKKService : InputMethodService() {
         filter.addCategory(SKKMushroom.CATEGORY_BROADCAST)
         ContextCompat.registerReceiver(this, mMushroomReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
         ContextCompat.registerReceiver(this, mReloadReceiver, IntentFilter(ACTION_COMMAND), ContextCompat.RECEIVER_NOT_EXPORTED)
+
+        val keyMapperIntentFilter = IntentFilter()
+        keyMapperIntentFilter.addAction(KeyMapperBroadcastReceiver.KEY_MAPPER_INPUT_METHOD_ACTION_INPUT_DOWN_UP)
+        keyMapperIntentFilter.addAction(KeyMapperBroadcastReceiver.KEY_MAPPER_INPUT_METHOD_ACTION_INPUT_DOWN)
+        keyMapperIntentFilter.addAction(KeyMapperBroadcastReceiver.KEY_MAPPER_INPUT_METHOD_ACTION_INPUT_UP)
+        keyMapperIntentFilter.addAction(KeyMapperBroadcastReceiver.KEY_MAPPER_INPUT_METHOD_ACTION_TEXT)
+        ContextCompat.registerReceiver(this, mKeyMapperBroadcastReceiver, keyMapperIntentFilter, ContextCompat.RECEIVER_EXPORTED)
 
         mSpeechRecognizer.setRecognitionListener(object : RecognitionListener {
             private fun restoreState() {
@@ -491,6 +499,7 @@ class SKKService : InputMethodService() {
         mEngine.commitUserDictChanges()
         unregisterReceiver(mMushroomReceiver)
         unregisterReceiver(mReloadReceiver)
+        unregisterReceiver(mKeyMapperBroadcastReceiver)
         mSpeechRecognizer.destroy()
 
         super.onDestroy()
